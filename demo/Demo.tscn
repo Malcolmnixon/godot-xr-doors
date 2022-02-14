@@ -1,0 +1,240 @@
+[gd_scene load_steps=17 format=2]
+
+[ext_resource path="res://addons/wahooney.itch.io/white_grid.png" type="Texture" id=1]
+[ext_resource path="res://demo/Player.tscn" type="PackedScene" id=2]
+[ext_resource path="res://addons/godot-xr-tools/objects/Object_pickable.gd" type="Script" id=3]
+[ext_resource path="res://demo/door/HingedDoor.tscn" type="PackedScene" id=4]
+
+[sub_resource type="BoxShape" id=1]
+extents = Vector3( 20, 0.5, 10 )
+
+[sub_resource type="PlaneMesh" id=2]
+size = Vector2( 40, 20 )
+
+[sub_resource type="SpatialMaterial" id=3]
+albedo_color = Color( 0, 0.501961, 0, 1 )
+albedo_texture = ExtResource( 1 )
+uv1_triplanar = true
+
+[sub_resource type="BoxShape" id=7]
+extents = Vector3( 0.25, 0.25, 0.25 )
+
+[sub_resource type="CubeMesh" id=8]
+size = Vector3( 0.5, 0.5, 0.5 )
+
+[sub_resource type="SpatialMaterial" id=9]
+albedo_color = Color( 0.501961, 0.501961, 0.501961, 1 )
+albedo_texture = ExtResource( 1 )
+
+[sub_resource type="ViewportTexture" id=16]
+viewport_path = NodePath("Doors/Locked/Sprite3D/Viewport")
+
+[sub_resource type="ViewportTexture" id=17]
+viewport_path = NodePath("Doors/OutOnlyLatchOnClose/Sprite3D2/Viewport")
+
+[sub_resource type="ViewportTexture" id=18]
+viewport_path = NodePath("Doors/BidirectionalLatchOnClose/Sprite3D3/Viewport")
+
+[sub_resource type="ViewportTexture" id=19]
+viewport_path = NodePath("Doors/SelfClosingLatchOnClose/Sprite3D4/Viewport")
+
+[sub_resource type="ViewportTexture" id=20]
+viewport_path = NodePath("Doors/Bidirectional/Sprite3D5/Viewport")
+
+[sub_resource type="ViewportTexture" id=15]
+viewport_path = NodePath("Doors/SelfClosing/Sprite3D6/Viewport")
+
+[node name="Demo" type="Spatial"]
+
+[node name="Ground" type="StaticBody" parent="."]
+
+[node name="CollisionShape" type="CollisionShape" parent="Ground"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0 )
+shape = SubResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Ground"]
+mesh = SubResource( 2 )
+material/0 = SubResource( 3 )
+
+[node name="Player" parent="." instance=ExtResource( 2 )]
+
+[node name="GrabCube" type="RigidBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1.30881, 0.25, -1 )
+collision_mask = 524289
+can_sleep = false
+script = ExtResource( 3 )
+reset_transform_on_pickup = false
+highlight_mesh_instance = null
+picked_up_layer = 2
+
+[node name="PickupCenter" type="Spatial" parent="GrabCube"]
+
+[node name="CollisionShape" type="CollisionShape" parent="GrabCube"]
+shape = SubResource( 7 )
+
+[node name="MeshInstance" type="MeshInstance" parent="GrabCube"]
+mesh = SubResource( 8 )
+material/0 = SubResource( 9 )
+
+[node name="Doors" type="Spatial" parent="."]
+
+[node name="Locked" type="Spatial" parent="Doors"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, -2 )
+
+[node name="LeftDoor" parent="Doors/Locked" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0 )
+door_locked = true
+
+[node name="RightDoor" parent="Doors/Locked" instance=ExtResource( 4 )]
+transform = Transform( -1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 1, 0, 2.38419e-07 )
+door_minimum_angle = 0.0
+door_maximum_angle = 90.0
+door_locked = true
+
+[node name="Sprite3D" type="Sprite3D" parent="Doors/Locked"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0 )
+texture = SubResource( 16 )
+
+[node name="Viewport" type="Viewport" parent="Doors/Locked/Sprite3D"]
+size = Vector2( 87, 14 )
+render_target_v_flip = true
+
+[node name="Label" type="Label" parent="Doors/Locked/Sprite3D/Viewport"]
+margin_right = 40.0
+margin_bottom = 14.0
+text = "Locked Doors"
+
+[node name="OutOnlyLatchOnClose" type="Spatial" parent="Doors"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, -2 )
+
+[node name="LeftDoor" parent="Doors/OutOnlyLatchOnClose" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0 )
+
+[node name="RightDoor" parent="Doors/OutOnlyLatchOnClose" instance=ExtResource( 4 )]
+transform = Transform( -1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 1, 0, 2.38419e-07 )
+door_minimum_angle = 0.0
+door_maximum_angle = 90.0
+
+[node name="Sprite3D2" type="Sprite3D" parent="Doors/OutOnlyLatchOnClose"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0 )
+texture = SubResource( 17 )
+
+[node name="Viewport" type="Viewport" parent="Doors/OutOnlyLatchOnClose/Sprite3D2"]
+size = Vector2( 97, 31 )
+render_target_v_flip = true
+
+[node name="Label" type="Label" parent="Doors/OutOnlyLatchOnClose/Sprite3D2/Viewport"]
+margin_right = 40.0
+margin_bottom = 14.0
+text = "Open Out Only
+Latch on Close"
+
+[node name="BidirectionalLatchOnClose" type="Spatial" parent="Doors"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, -2 )
+
+[node name="LeftDoor" parent="Doors/BidirectionalLatchOnClose" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0 )
+door_maximum_angle = 90.0
+
+[node name="RightDoor" parent="Doors/BidirectionalLatchOnClose" instance=ExtResource( 4 )]
+transform = Transform( -1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 1, 0, 2.38419e-07 )
+door_maximum_angle = 90.0
+
+[node name="Sprite3D3" type="Sprite3D" parent="Doors/BidirectionalLatchOnClose"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0 )
+texture = SubResource( 18 )
+
+[node name="Viewport" type="Viewport" parent="Doors/BidirectionalLatchOnClose/Sprite3D3"]
+size = Vector2( 93, 31 )
+render_target_v_flip = true
+
+[node name="Label" type="Label" parent="Doors/BidirectionalLatchOnClose/Sprite3D3/Viewport"]
+margin_right = 40.0
+margin_bottom = 14.0
+text = "Bidirectional
+Latch on Close"
+
+[node name="SelfClosingLatchOnClose" type="Spatial" parent="Doors"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, -2 )
+
+[node name="LeftDoor" parent="Doors/SelfClosingLatchOnClose" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0 )
+door_maximum_angle = 90.0
+handle_minimum_angle = -70.0
+close_force = 1.0
+
+[node name="RightDoor" parent="Doors/SelfClosingLatchOnClose" instance=ExtResource( 4 )]
+transform = Transform( -1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 1, 0, 2.38419e-07 )
+door_maximum_angle = 90.0
+handle_minimum_angle = -70.0
+close_force = 1.0
+
+[node name="Sprite3D4" type="Sprite3D" parent="Doors/SelfClosingLatchOnClose"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0 )
+texture = SubResource( 19 )
+
+[node name="Viewport" type="Viewport" parent="Doors/SelfClosingLatchOnClose/Sprite3D4"]
+size = Vector2( 93, 31 )
+render_target_v_flip = true
+
+[node name="Label" type="Label" parent="Doors/SelfClosingLatchOnClose/Sprite3D4/Viewport"]
+margin_right = 40.0
+margin_bottom = 14.0
+text = "Self Closing
+Latch on Close"
+
+[node name="Bidirectional" type="Spatial" parent="Doors"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, -2 )
+
+[node name="LeftDoor" parent="Doors/Bidirectional" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0 )
+door_maximum_angle = 90.0
+latch_on_close = false
+
+[node name="RightDoor" parent="Doors/Bidirectional" instance=ExtResource( 4 )]
+transform = Transform( -1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 1, 0, 2.38419e-07 )
+door_maximum_angle = 90.0
+latch_on_close = false
+
+[node name="Sprite3D5" type="Sprite3D" parent="Doors/Bidirectional"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0 )
+texture = SubResource( 20 )
+
+[node name="Viewport" type="Viewport" parent="Doors/Bidirectional/Sprite3D5"]
+size = Vector2( 81, 14 )
+render_target_v_flip = true
+
+[node name="Label" type="Label" parent="Doors/Bidirectional/Sprite3D5/Viewport"]
+margin_right = 40.0
+margin_bottom = 14.0
+text = "Bidirectional"
+
+[node name="SelfClosing" type="Spatial" parent="Doors"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, -2 )
+
+[node name="LeftDoor" parent="Doors/SelfClosing" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0 )
+door_maximum_angle = 90.0
+close_force = 1.0
+friction = 0.3
+latch_on_close = false
+
+[node name="RightDoor" parent="Doors/SelfClosing" instance=ExtResource( 4 )]
+transform = Transform( -1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 1, 0, 2.38419e-07 )
+door_maximum_angle = 90.0
+close_force = 1.0
+friction = 0.3
+latch_on_close = false
+
+[node name="Sprite3D6" type="Sprite3D" parent="Doors/SelfClosing"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0 )
+texture = SubResource( 15 )
+
+[node name="Viewport" type="Viewport" parent="Doors/SelfClosing/Sprite3D6"]
+size = Vector2( 73, 14 )
+render_target_v_flip = true
+
+[node name="Label" type="Label" parent="Doors/SelfClosing/Sprite3D6/Viewport"]
+margin_right = 40.0
+margin_bottom = 14.0
+text = "Self Closing"

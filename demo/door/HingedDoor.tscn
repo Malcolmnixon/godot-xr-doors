@@ -1,0 +1,73 @@
+[gd_scene load_steps=11 format=2]
+
+[ext_resource path="res://demo/door/HingedDoor.gd" type="Script" id=1]
+[ext_resource path="res://demo/door/DoorHandleGrab.gd" type="Script" id=2]
+[ext_resource path="res://demo/door/HingedDoorBody.gd" type="Script" id=3]
+[ext_resource path="res://addons/wahooney.itch.io/white_grid.png" type="Texture" id=4]
+
+[sub_resource type="BoxShape" id=1]
+extents = Vector3( 0.5, 1.2, 0.05 )
+
+[sub_resource type="CubeMesh" id=2]
+size = Vector3( 1, 2.4, 0.1 )
+
+[sub_resource type="SpatialMaterial" id=6]
+albedo_texture = ExtResource( 4 )
+uv1_triplanar = true
+
+[sub_resource type="CubeMesh" id=3]
+size = Vector3( 0.02, 0.02, 0.2 )
+
+[sub_resource type="CubeMesh" id=4]
+size = Vector3( 0.1, 0.02, 0.02 )
+
+[sub_resource type="BoxShape" id=5]
+extents = Vector3( 0.07, 0.05, 0.1 )
+
+[node name="HingedDoor" type="Spatial"]
+script = ExtResource( 1 )
+
+[node name="HingedDoorBody" type="RigidBody" parent="."]
+collision_mask = 525308
+mode = 1
+gravity_scale = 0.0
+script = ExtResource( 3 )
+
+[node name="DoorBodyShape" type="CollisionShape" parent="HingedDoorBody"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 1.2, 0 )
+shape = SubResource( 1 )
+
+[node name="DoorBodyMesh" type="MeshInstance" parent="HingedDoorBody"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 1.2, 0 )
+mesh = SubResource( 2 )
+material/0 = SubResource( 6 )
+
+[node name="DoorHandleOrigin" type="Spatial" parent="HingedDoorBody"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.93, 1, 0 )
+
+[node name="DoorHandleModel" type="Spatial" parent="HingedDoorBody/DoorHandleOrigin"]
+
+[node name="MeshInstance" type="MeshInstance" parent="HingedDoorBody/DoorHandleOrigin/DoorHandleModel"]
+mesh = SubResource( 3 )
+material/0 = null
+
+[node name="MeshInstance2" type="MeshInstance" parent="HingedDoorBody/DoorHandleOrigin/DoorHandleModel"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.04, 0, 0.09 )
+mesh = SubResource( 4 )
+material/0 = null
+
+[node name="MeshInstance3" type="MeshInstance" parent="HingedDoorBody/DoorHandleOrigin/DoorHandleModel"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.04, 0, -0.09 )
+mesh = SubResource( 4 )
+material/0 = null
+
+[node name="DoorHandleGrab" type="RigidBody" parent="HingedDoorBody/DoorHandleOrigin"]
+collision_layer = 2
+collision_mask = 0
+mode = 1
+gravity_scale = 0.0
+script = ExtResource( 2 )
+reset_transform_on_pickup = false
+
+[node name="CollisionShape" type="CollisionShape" parent="HingedDoorBody/DoorHandleOrigin/DoorHandleGrab"]
+shape = SubResource( 5 )

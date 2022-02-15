@@ -26,16 +26,6 @@ export var snap_distance := 0.3
 # Node references
 onready var _origin : Spatial = get_parent()
 
-# Handle letting go of the door handle grab
-func let_go(_p_linear_velocity = Vector3(), _p_angular_velocity = Vector3()):
-	# Call the base-class to perform the drop, but with no velocity
-	.let_go()
-
-	# Snap the handle back to the origin
-	transform = Transform.IDENTITY
-
-	# Emit the handle dropped signal
-	emit_signal("handle_dropped", self)
 
 # Handle auto-snapping the grab
 func _process(_delta):
@@ -48,3 +38,15 @@ func _process(_delta):
 		# If too far then drop the handle
 		if distance > snap_distance:
 			picked_up_by.drop_object()
+
+
+# Handle letting go of the door handle grab
+func let_go(_p_linear_velocity = Vector3(), _p_angular_velocity = Vector3()):
+	# Call the base-class to perform the drop, but with no velocity
+	.let_go()
+
+	# Snap the handle back to the origin
+	transform = Transform.IDENTITY
+
+	# Emit the handle dropped signal
+	emit_signal("handle_dropped", self)

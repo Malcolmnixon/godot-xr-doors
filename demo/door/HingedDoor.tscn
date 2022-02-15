@@ -1,11 +1,11 @@
 [gd_scene load_steps=14 format=2]
 
-[ext_resource path="res://demo/door/HingedDoor.gd" type="Script" id=1]
-[ext_resource path="res://demo/door/DoorHandleGrab.gd" type="Script" id=2]
-[ext_resource path="res://demo/door/HingedDoorBody.gd" type="Script" id=3]
+[ext_resource path="res://demo/door/hinged_door.gd" type="Script" id=1]
+[ext_resource path="res://demo/door/door_handle_grab.gd" type="Script" id=2]
+[ext_resource path="res://demo/door/hinged_door_body.gd" type="Script" id=3]
 [ext_resource path="res://addons/wahooney.itch.io/white_grid.png" type="Texture" id=4]
 [ext_resource path="res://addons/freesound.org/12738__leady__door-handle-turn.mp3" type="AudioStream" id=5]
-[ext_resource path="res://demo/door/DoorSounds.gd" type="Script" id=6]
+[ext_resource path="res://demo/door/door_sounds.gd" type="Script" id=6]
 [ext_resource path="res://addons/freesound.org/431118__inspectorj__door-front-closing-a.mp3" type="AudioStream" id=7]
 
 [sub_resource type="BoxShape" id=1]
@@ -78,6 +78,7 @@ reset_transform_on_pickup = false
 shape = SubResource( 5 )
 
 [node name="DoorSounds" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0 )
 script = ExtResource( 6 )
 
 [node name="DoorOpened" type="AudioStreamPlayer3D" parent="DoorSounds"]

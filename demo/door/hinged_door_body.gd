@@ -34,14 +34,11 @@ extends RigidBody
 enum DoorState {
 	LATCHED,	# Door is latched closed
 	OPEN,		# Door is open and can freely swing
-	GRABBED		# Door is grabbed and driven by the player hand
+	GRABBED,	# Door is grabbed and driven by the player hand
 }
 
-# Node references
-onready var _parent : HingedDoor = get_parent()
-onready var _handle_origin : Spatial = $DoorHandleOrigin
-onready var _handle_grab : DoorHandleGrab = $DoorHandleOrigin/DoorHandleGrab
-onready var _handle_model : Spatial = get_node_or_null("DoorHandleOrigin/DoorHandleModel")
+# Horizontal vector (multiply by this to get only the horizontal components
+const HORIZONTAL := Vector3(1.0, 0.0, 1.0)
 
 # Door body position in relationship to the parent door
 var _door_position := Vector3.ZERO
@@ -71,8 +68,12 @@ var _avg_angle_deltas := Array()
 var _avg_last_transform := Transform.IDENTITY
 var _average_velocity := 0.0
 
-# Horizontal vector (multiply by this to get only the horizontal components
-const horizontal := Vector3(1.0, 0.0, 1.0)
+# Node references
+onready var _parent : HingedDoor = get_parent()
+onready var _handle_origin : Spatial = $DoorHandleOrigin
+onready var _handle_grab : DoorHandleGrab = $DoorHandleOrigin/DoorHandleGrab
+onready var _handle_model : Spatial = get_node_or_null("DoorHandleOrigin/DoorHandleModel")
+
 
 func _ready():
 	# Save our position relative to the parent hinged door
@@ -94,32 +95,6 @@ func _ready():
 	else:
 		_set_door_state(DoorState.LATCHED)
 
-# Called when the user grabs the door handle
-func _on_handle_grab_picked_up(var _pickable):
-	# Indicate the door is grabbed
-	_handle_grabbed = true
-
-	# If the door is OPEN then transition to GRABBED
-	if _door_state == DoorState.OPEN:
-		_set_door_state(DoorState.GRABBED)
-
-	# Report the door opened (emits public signal)
-	_parent._on_door_grabbed()
-
-# Called when the user releases the door handle
-func _on_handle_grab_dropped(var _pickable):
-	# Indicate the door is not grabbed
-	_handle_grabbed = false
-
-	# If the door is latched then skip
-	if _door_state == DoorState.LATCHED:
-		return
-
-	# Transition to OPEN - the _integrate_forces process may latch it
-	_set_door_state(DoorState.OPEN)
-
-	# Report the door released (emits public signal)
-	_parent.on_door_released()
 
 # Process door handle mechanics on each frame
 func _process(_delta):
@@ -158,13 +133,87 @@ func _process(_delta):
 		# Report door opened - should we only do this if we were LATCHED?
 		_parent._on_door_opened()
 
+
+# Perform the physics processing on the door body
+func _integrate_forces(state):
+	# Get the current door angle and velocity
+	_door_angle = _measure_door_angle()
+	_door_velocity = state.angular_velocity.y
+	
+	# Check if the player has grabbed the door
+	if _door_state == DoorState.GRABBED:
+		# Update the kinematic angular velocity
+		_update_average_velocity(state.step, state.transform)
+		_door_velocity = _average_velocity
+
+		# Get the handle grab position in the parent door space
+		var handle_grab_position : Vector3 = _parent.global_transform.xform_inv(_handle_grab.global_transform.origin) * HORIZONTAL
+		_door_angle = Vector3.RIGHT.signed_angle_to(handle_grab_position, Vector3.UP)
+
+	# Clamp the door angle - also affects velocity when hitting limits
+	if _door_angle > deg2rad(_parent.door_maximum_angle):
+		_door_angle = deg2rad(_parent.door_maximum_angle)
+		if _door_velocity > 0.0:
+			_door_velocity *= -_parent.bounce
+	if _door_angle < deg2rad(_parent.door_minimum_angle):
+		_door_angle = deg2rad(_parent.door_minimum_angle)
+		if _door_velocity < 0.0:
+			_door_velocity *= -_parent.bounce
+	
+	# Handle auto-latching
+	if _door_state == DoorState.OPEN and _parent.latch_on_close:
+		if abs(_door_angle) < deg2rad(_parent.latch_angle):
+			call_deferred("_latch_door")
+
+	# Apply door close-force and friction terms
+	_door_velocity -= _door_angle * _parent.close_force * state.step
+	_door_velocity *= 1.0 - _parent.friction * state.step
+	
+	# Set the door body velocities
+	state.linear_velocity = Vector3.ZERO
+	state.angular_velocity = Vector3(0.0, _door_velocity, 0.0)
+	
+	# Set the door body transform
+	state.transform = _parent.global_transform * Transform(Basis(Vector3.UP, _door_angle), _door_position)
+
+
+# Called when the user grabs the door handle
+func _on_handle_grab_picked_up(var _pickable):
+	# Indicate the door is grabbed
+	_handle_grabbed = true
+
+	# If the door is OPEN then transition to GRABBED
+	if _door_state == DoorState.OPEN:
+		_set_door_state(DoorState.GRABBED)
+
+	# Report the door opened (emits public signal)
+	_parent._on_door_grabbed()
+
+
+# Called when the user releases the door handle
+func _on_handle_grab_dropped(var _pickable):
+	# Indicate the door is not grabbed
+	_handle_grabbed = false
+
+	# If the door is latched then skip
+	if _door_state == DoorState.LATCHED:
+		return
+
+	# Transition to OPEN - the _integrate_forces process may latch it
+	_set_door_state(DoorState.OPEN)
+
+	# Report the door released (emits public signal)
+	_parent.on_door_released()
+
+
 # Measure the angle of the door body (in relation to the parent door)
 func _measure_door_angle() -> float:
 	# Get the handle origin position in the parents coordinate space
-	var handle_position : Vector3 = _parent.global_transform.xform_inv(_handle_origin.global_transform.origin) * horizontal
+	var handle_position : Vector3 = _parent.global_transform.xform_inv(_handle_origin.global_transform.origin) * HORIZONTAL
 	
 	# Measure and return the handle angle
 	return Vector3.RIGHT.signed_angle_to(handle_position, Vector3.UP)
+
 
 # Set the door state
 func _set_door_state(var door_state):
@@ -197,6 +246,7 @@ func _set_door_state(var door_state):
 	# Update the state
 	_door_state = door_state
 
+
 # Update the sliding-window average angular velocity of the door body
 func _update_average_velocity(var time_delta: float, var global_transform: Transform):
 	# Calculate the angular delta
@@ -225,6 +275,7 @@ func _update_average_velocity(var time_delta: float, var global_transform: Trans
 	# Update the average angular velocity
 	_average_velocity = total_angle / total_time
 
+
 func _latch_door():
 	# Set the door state to latched (static)
 	_set_door_state(DoorState.LATCHED)
@@ -236,45 +287,3 @@ func _latch_door():
 
 	# Report the door closed (emits public signal)
 	_parent._on_door_closed()
-
-# Perform the physics processing on the door body
-func _integrate_forces(state):
-	# Get the current door angle and velocity
-	_door_angle = _measure_door_angle()
-	_door_velocity = state.angular_velocity.y
-	
-	# Check if the player has grabbed the door
-	if _door_state == DoorState.GRABBED:
-		# Update the kinematic angular velocity
-		_update_average_velocity(state.step, state.transform)
-		_door_velocity = _average_velocity
-
-		# Get the handle grab position in the parent door space
-		var handle_grab_position : Vector3 = _parent.global_transform.xform_inv(_handle_grab.global_transform.origin) * horizontal
-		_door_angle = Vector3.RIGHT.signed_angle_to(handle_grab_position, Vector3.UP)
-
-	# Clamp the door angle - also affects velocity when hitting limits
-	if _door_angle > deg2rad(_parent.door_maximum_angle):
-		_door_angle = deg2rad(_parent.door_maximum_angle)
-		if _door_velocity > 0.0:
-			_door_velocity *= -_parent.bounce
-	if _door_angle < deg2rad(_parent.door_minimum_angle):
-		_door_angle = deg2rad(_parent.door_minimum_angle)
-		if _door_velocity < 0.0:
-			_door_velocity *= -_parent.bounce
-	
-	# Handle auto-latching
-	if _door_state == DoorState.OPEN and _parent.latch_on_close:
-		if abs(_door_angle) < deg2rad(_parent.latch_angle):
-			call_deferred("_latch_door")
-
-	# Apply door close-force and friction terms
-	_door_velocity -= _door_angle * _parent.close_force * state.step
-	_door_velocity *= 1.0 - _parent.friction * state.step
-	
-	# Set the door body velocities
-	state.linear_velocity = Vector3.ZERO
-	state.angular_velocity = Vector3(0.0, _door_velocity, 0.0)
-	
-	# Set the door body transform
-	state.transform = _parent.global_transform * Transform(Basis(Vector3.UP, _door_angle), _door_position)

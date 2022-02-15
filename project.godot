@@ -17,7 +17,7 @@ _global_script_classes=[ {
 "base": "XRToolsPickable",
 "class": "DoorHandleGrab",
 "language": "GDScript",
-"path": "res://demo/door/DoorHandleGrab.gd"
+"path": "res://demo/door/door_handle_grab.gd"
 }, {
 "base": "MovementProvider",
 "class": "Function_ClimbMovement",
@@ -62,12 +62,12 @@ _global_script_classes=[ {
 "base": "Spatial",
 "class": "HingedDoor",
 "language": "GDScript",
-"path": "res://demo/door/HingedDoor.gd"
+"path": "res://demo/door/hinged_door.gd"
 }, {
 "base": "RigidBody",
 "class": "HingedDoorBody",
 "language": "GDScript",
-"path": "res://demo/door/HingedDoorBody.gd"
+"path": "res://demo/door/hinged_door_body.gd"
 }, {
 "base": "Node",
 "class": "MovementProvider",

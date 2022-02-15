@@ -56,14 +56,18 @@ export var latch_on_close := true
 ## Flag to lock the door so the handle will not open it
 export var door_locked := false
 
+
 func _on_door_grabbed():
 	emit_signal("door_grabbed", self)
+
 
 func on_door_released():
 	emit_signal("door_released", self)
 
+
 func _on_door_opened():
 	emit_signal("door_opened", self)
+
 
 func _on_door_closed():
 	emit_signal("door_closed", self)

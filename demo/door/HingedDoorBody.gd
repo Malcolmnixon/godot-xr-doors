@@ -111,6 +111,10 @@ func _on_handle_grab_dropped(var _pickable):
 	# Indicate the door is not grabbed
 	_handle_grabbed = false
 
+	# If the door is latched then skip
+	if _door_state == DoorState.LATCHED:
+		return
+
 	# Transition to OPEN - the _integrate_forces process may latch it
 	_set_door_state(DoorState.OPEN)
 

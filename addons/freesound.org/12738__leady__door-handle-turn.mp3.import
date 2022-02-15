@@ -1,0 +1,15 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+path="res://.import/12738__leady__door-handle-turn.mp3-1d2d0b2a44053e533f317abc4e627674.mp3str"
+
+[deps]
+
+source_file="res://addons/freesound.org/12738__leady__door-handle-turn.mp3"
+dest_files=[ "res://.import/12738__leady__door-handle-turn.mp3-1d2d0b2a44053e533f317abc4e627674.mp3str" ]
+
+[params]
+
+loop=false
+loop_offset=0

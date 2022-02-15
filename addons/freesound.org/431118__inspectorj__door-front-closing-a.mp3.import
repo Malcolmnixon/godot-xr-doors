@@ -1,0 +1,15 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+path="res://.import/431118__inspectorj__door-front-closing-a.mp3-370cbe9de4db64193360156b55fb8d36.mp3str"
+
+[deps]
+
+source_file="res://addons/freesound.org/431118__inspectorj__door-front-closing-a.mp3"
+dest_files=[ "res://.import/431118__inspectorj__door-front-closing-a.mp3-370cbe9de4db64193360156b55fb8d36.mp3str" ]
+
+[params]
+
+loop=false
+loop_offset=0

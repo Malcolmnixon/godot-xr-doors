@@ -231,7 +231,7 @@ func _latch_door():
 	transform = Transform(Basis.IDENTITY, _door_position)
 
 	# Report the door closed (emits public signal)
-	_parent.call_deferred("_on_door_closed")
+	_parent._on_door_closed()
 
 # Perform the physics processing on the door body
 func _integrate_forces(state):
@@ -253,11 +253,11 @@ func _integrate_forces(state):
 	if _door_angle > deg2rad(_parent.door_maximum_angle):
 		_door_angle = deg2rad(_parent.door_maximum_angle)
 		if _door_velocity > 0.0:
-			_door_velocity = 0.0
+			_door_velocity *= -_parent.bounce
 	if _door_angle < deg2rad(_parent.door_minimum_angle):
 		_door_angle = deg2rad(_parent.door_minimum_angle)
 		if _door_velocity < 0.0:
-			_door_velocity = 0.0
+			_door_velocity *= -_parent.bounce
 	
 	# Handle auto-latching
 	if _door_state == DoorState.OPEN and _parent.latch_on_close:
@@ -265,7 +265,7 @@ func _integrate_forces(state):
 			call_deferred("_latch_door")
 
 	# Apply door close-force and friction terms
-	_door_velocity -= _parent.close_force * state.step * _door_angle
+	_door_velocity -= _door_angle * _parent.close_force * state.step
 	_door_velocity *= 1.0 - _parent.friction * state.step
 	
 	# Set the door body velocities

@@ -47,6 +47,9 @@ export(float, 0.0, 1.0, 0.01) var close_force := 0.0
 ## Door friction
 export(float, 0.0, 10.0, 0.1) var friction := 0.1
 
+## Door bounce-factor at end-stops
+export(float, 0.0, 1.0, 0.01) var bounce := 0.25
+
 ## Flag to set the door to latch when closed
 export var latch_on_close := true
 

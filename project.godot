@@ -154,6 +154,13 @@ config/icon="res://icon.png"
 
 singletons=[ "res://addons/godot-openxr/config/godot_openxr.gdnlib" ]
 
+[layer_names]
+
+3d_physics/layer_1="Environment"
+3d_physics/layer_2="Grabbed"
+3d_physics/layer_3="Doors"
+3d_physics/layer_20="Player"
+
 [physics]
 
 common/enable_pause_aware_picking=true

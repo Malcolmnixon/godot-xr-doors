@@ -41,6 +41,6 @@ origin = NodePath("")
 camera = NodePath("")
 
 [node name="KinematicBody" parent="PlayerBody" index="0"]
-collision_mask = 1
+collision_mask = 5
 
 [editable path="PlayerBody"]

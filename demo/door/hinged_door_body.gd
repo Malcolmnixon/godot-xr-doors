@@ -1,5 +1,5 @@
 class_name HingedDoorBody
-extends RigidBody
+extends DoorBody
 
 
 ##
@@ -9,45 +9,10 @@ extends RigidBody
 ##     This script manages the hinged door body and performs complex physics
 ##     operations to handle door velocity, limits, and user control.
 ##
-##     The door can be in one of three states - LATCHED, OPEN, or GRABBED.
-##
-##     When the door is LATCHED, its physics is set to RigidBody.MODE_STATIC to
-##     prevent any motion. The player may open the door by grabbing and twisting
-##     the handle. This will put the door into the GRABBED state.
-##
-##     When the door is OPEN, its physics is set to RigidBody.MODE_RIGID to 
-##     allow environmental physics such as collisions to move the door. If the
-##     doors 'latch_on_close' flag is set and the door gets within 'latch_angle'
-##     of closed, then the door will close and transition to LATCHED.
-##
-##     When the door is GRABBED, its physics is set to RigidBody.MODE_KINEMATIC
-##     to allow direct control of its motion. Motion is applied by having the
-##     door rotate to align to the DoorHandleGrab object the player is holding.
-##
-##     While the door is GRABBED, a sliding-window averager is used to calculate
-##     the doors angular velocity. When the door is released, this velocity is 
-##     applied to the RigidBody so the player can slam the door.
-##
 
-
-# Enumeration of door states
-enum DoorState {
-	LATCHED,	# Door is latched closed
-	OPEN,		# Door is open and can freely swing
-	GRABBED,	# Door is grabbed and driven by the player hand
-}
 
 # Horizontal vector (multiply by this to get only the horizontal components
 const HORIZONTAL := Vector3(1.0, 0.0, 1.0)
-
-# Door body position in relationship to the parent door
-var _door_position := Vector3.ZERO
-
-# Door state (LATCHED, OPEN, GRABBED) - initially invalid
-var _door_state = -1
-
-# Is the handle grabbed
-var _handle_grabbed := false
 
 # Is the handle twisted to an open position
 var _handle_twisted := false
@@ -69,20 +34,11 @@ var _avg_last_transform := Transform.IDENTITY
 var _average_velocity := 0.0
 
 # Node references
-onready var _parent : HingedDoor = get_parent()
-onready var _handle_origin : Spatial = $DoorHandleOrigin
-onready var _handle_grab : DoorHandleGrab = $DoorHandleOrigin/DoorHandleGrab
+onready var _parent : HingedDoorApi = get_parent()
 onready var _handle_model : Spatial = get_node_or_null("DoorHandleOrigin/DoorHandleModel")
 
 
 func _ready():
-	# Save our position relative to the parent hinged door
-	_door_position = transform.origin
-
-	# Get the grab handle and connect the events
-	_handle_grab.connect("picked_up", self, "_on_handle_grab_picked_up")
-	_handle_grab.connect("handle_dropped", self, "_on_handle_grab_dropped")
-
 	# If no handle model then just assume the handle is twisted
 	if !_handle_model:
 		_handle_twisted = true
@@ -104,7 +60,7 @@ func _process(_delta):
 
 	# Measure the door handle angle and whether we consider it twisted to open
 	var new_angle := 0.0
-	var new_twisted := false
+	var new_can_open := false
 	if _handle_grabbed:
 		# Measure the handle twist angle in relationship to the door
 		var right : Vector3 = _handle_origin.global_transform.xform_inv(
@@ -117,21 +73,17 @@ func _process(_delta):
 
 		# Detect if the door handle has been twisted to an open position
 		if abs(new_angle) > deg2rad(_parent.handle_open_angle):
-			new_twisted = true
+			new_can_open = true
 
 	# Update the state information and move the door handle model if necessary
-	_handle_twisted = new_twisted
+	_can_open_door = new_can_open
 	if _handle_angle != new_angle:
 		_handle_angle = new_angle
 		_handle_model.transform.basis = Basis(Vector3.BACK, new_angle)
 
-	# Detect opening the door
-	if _door_state != DoorState.GRABBED and !_parent.door_locked and _handle_twisted and _handle_grabbed:
-		# Transition to GRABBED state
+	# Detect turning the handle to open the door
+	if _door_state != DoorState.GRABBED and _handle_grabbed and !_parent.door_locked and _can_open_door:
 		_set_door_state(DoorState.GRABBED)
-
-		# Report door opened - should we only do this if we were LATCHED?
-		_parent._on_door_opened()
 
 
 # Perform the physics processing on the door body
@@ -174,7 +126,7 @@ func _integrate_forces(state):
 	state.angular_velocity = Vector3(0.0, _door_velocity, 0.0)
 	
 	# Set the door body transform
-	state.transform = _parent.global_transform * Transform(Basis(Vector3.UP, _door_angle), _door_position)
+	state.transform = _parent.global_transform * Transform(Basis(Vector3.UP, _door_angle), _door_origin)
 
 
 # Called when the user grabs the door handle
@@ -186,24 +138,8 @@ func _on_handle_grab_picked_up(var _pickable):
 	if _door_state == DoorState.OPEN:
 		_set_door_state(DoorState.GRABBED)
 
-	# Report the door opened (emits public signal)
+	# Report the door grabbed (emits public signal)
 	_parent._on_door_grabbed()
-
-
-# Called when the user releases the door handle
-func _on_handle_grab_dropped(var _pickable):
-	# Indicate the door is not grabbed
-	_handle_grabbed = false
-
-	# If the door is latched then skip
-	if _door_state == DoorState.LATCHED:
-		return
-
-	# Transition to OPEN - the _integrate_forces process may latch it
-	_set_door_state(DoorState.OPEN)
-
-	# Report the door released (emits public signal)
-	_parent.on_door_released()
 
 
 # Measure the angle of the door body (in relation to the parent door)
@@ -215,36 +151,17 @@ func _measure_door_angle() -> float:
 	return Vector3.RIGHT.signed_angle_to(handle_position, Vector3.UP)
 
 
-# Set the door state
-func _set_door_state(var door_state):
-	# Skip if no change
-	if door_state == _door_state:
-		return
+# Clear the motion averager
+func _clear_motion_averager():
+	_avg_last_transform = global_transform
+	_avg_time_deltas.clear()
+	_avg_angle_deltas.clear()
+	_average_velocity = 0.0
 
-	# Handle physics transitions
-	if door_state == DoorState.LATCHED:
-		# Set physics to MODE_STATIC if latching
-		mode = RigidBody.MODE_STATIC
-	elif door_state == DoorState.GRABBED:
-		# User has grabbed the door, clear old averaging data
-		_avg_last_transform = global_transform
-		_avg_time_deltas.clear()
-		_avg_angle_deltas.clear()
-		_average_velocity = 0.0
 
-		# Set physics to MODE_KINEMATIC so the user can move the door
-		mode = RigidBody.MODE_KINEMATIC
-	else:
-		# Door is open, set physics to MODE_RIGID for environmental effects
-		mode = RigidBody.MODE_RIGID
-
-		# If the transition was from GRABBED -> OPEN then apply average velocity
-		# so the door will drift in its previous direction
-		if _door_state == DoorState.GRABBED:
-			angular_velocity = Vector3(0.0, _average_velocity, 0.0)
-
-	# Update the state
-	_door_state = door_state
+# Apply the average motion
+func _apply_average_motion():
+	angular_velocity = Vector3(0.0, _average_velocity, 0.0)
 
 
 # Update the sliding-window average angular velocity of the door body
@@ -283,7 +200,7 @@ func _latch_door():
 	# Set the door to closed
 	_door_angle = 0.0
 	_door_velocity = 0.0
-	transform = Transform(Basis.IDENTITY, _door_position)
+	transform = Transform(Basis.IDENTITY, _door_origin)
 
 	# Report the door closed (emits public signal)
 	_parent._on_door_closed()

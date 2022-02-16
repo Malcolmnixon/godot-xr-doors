@@ -1,0 +1,78 @@
+[gd_scene load_steps=13 format=2]
+
+[ext_resource path="res://demo/door/sliding_door_api.gd" type="Script" id=1]
+[ext_resource path="res://addons/wahooney.itch.io/white_grid.png" type="Texture" id=2]
+[ext_resource path="res://demo/door/door_handle_grab.gd" type="Script" id=3]
+[ext_resource path="res://demo/door/sliding_door_body.gd" type="Script" id=4]
+[ext_resource path="res://demo/door/door_sounds.gd" type="Script" id=5]
+[ext_resource path="res://addons/freesound.org/12738__leady__door-handle-turn.mp3" type="AudioStream" id=6]
+[ext_resource path="res://addons/freesound.org/431118__inspectorj__door-front-closing-a.mp3" type="AudioStream" id=7]
+
+[sub_resource type="BoxShape" id=1]
+extents = Vector3( 0.5, 1.2, 0.05 )
+
+[sub_resource type="CubeMesh" id=2]
+size = Vector3( 1, 2.4, 0.1 )
+
+[sub_resource type="SpatialMaterial" id=3]
+albedo_texture = ExtResource( 2 )
+uv1_triplanar = true
+
+[sub_resource type="CubeMesh" id=4]
+size = Vector3( 0.02, 0.2, 0.2 )
+
+[sub_resource type="BoxShape" id=5]
+extents = Vector3( 0.07, 0.13, 0.1 )
+
+[node name="SlidingDoor" type="Spatial"]
+script = ExtResource( 1 )
+
+[node name="SlidingDoorBody" type="RigidBody" parent="."]
+collision_layer = 4
+collision_mask = 3
+mode = 1
+gravity_scale = 0.0
+can_sleep = false
+script = ExtResource( 4 )
+
+[node name="DoorBodyShape" type="CollisionShape" parent="SlidingDoorBody"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 1.2, 0 )
+shape = SubResource( 1 )
+
+[node name="DoorBodyMesh" type="MeshInstance" parent="SlidingDoorBody"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 1.2, 0 )
+mesh = SubResource( 2 )
+material/0 = SubResource( 3 )
+
+[node name="DoorHandleOrigin" type="Spatial" parent="SlidingDoorBody"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07, 1, 0 )
+
+[node name="DoorHandleModel" type="Spatial" parent="SlidingDoorBody/DoorHandleOrigin"]
+
+[node name="MeshInstance" type="MeshInstance" parent="SlidingDoorBody/DoorHandleOrigin/DoorHandleModel"]
+mesh = SubResource( 4 )
+material/0 = null
+
+[node name="DoorHandleGrab" type="RigidBody" parent="SlidingDoorBody/DoorHandleOrigin"]
+collision_layer = 8
+collision_mask = 0
+mode = 1
+gravity_scale = 0.0
+script = ExtResource( 3 )
+reset_transform_on_pickup = false
+
+[node name="CollisionShape" type="CollisionShape" parent="SlidingDoorBody/DoorHandleOrigin/DoorHandleGrab"]
+shape = SubResource( 5 )
+
+[node name="DoorSounds" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0 )
+script = ExtResource( 5 )
+
+[node name="DoorOpened" type="AudioStreamPlayer3D" parent="DoorSounds"]
+stream = ExtResource( 6 )
+
+[node name="DoorClosed" type="AudioStreamPlayer3D" parent="DoorSounds"]
+stream = ExtResource( 7 )
+
+[connection signal="door_closed" from="." to="DoorSounds" method="_on_door_closed"]
+[connection signal="door_opened" from="." to="DoorSounds" method="_on_door_opened"]

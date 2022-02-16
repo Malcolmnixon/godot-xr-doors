@@ -14,6 +14,16 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/godot-xr-tools/misc/ARVR_Helpers.gd"
 }, {
+"base": "Spatial",
+"class": "DoorApi",
+"language": "GDScript",
+"path": "res://demo/door/door_api.gd"
+}, {
+"base": "RigidBody",
+"class": "DoorBody",
+"language": "GDScript",
+"path": "res://demo/door/door_body.gd"
+}, {
 "base": "XRToolsPickable",
 "class": "DoorHandleGrab",
 "language": "GDScript",
@@ -59,12 +69,12 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/godot-xr-tools/overrides/GroundPhysicsSettings.gd"
 }, {
-"base": "Spatial",
-"class": "HingedDoor",
+"base": "DoorApi",
+"class": "HingedDoorApi",
 "language": "GDScript",
-"path": "res://demo/door/hinged_door.gd"
+"path": "res://demo/door/hinged_door_api.gd"
 }, {
-"base": "RigidBody",
+"base": "DoorBody",
 "class": "HingedDoorBody",
 "language": "GDScript",
 "path": "res://demo/door/hinged_door_body.gd"
@@ -83,6 +93,16 @@ _global_script_classes=[ {
 "class": "PlayerBody",
 "language": "GDScript",
 "path": "res://addons/godot-xr-tools/assets/PlayerBody.gd"
+}, {
+"base": "DoorApi",
+"class": "SlidingDoorApi",
+"language": "GDScript",
+"path": "res://demo/door/sliding_door_api.gd"
+}, {
+"base": "DoorBody",
+"class": "SlidingDoorBody",
+"language": "GDScript",
+"path": "res://demo/door/sliding_door_body.gd"
 }, {
 "base": "Reference",
 "class": "VelocityAverager",
@@ -121,6 +141,8 @@ _global_script_classes=[ {
 } ]
 _global_script_class_icons={
 "ARVRHelpers": "",
+"DoorApi": "",
+"DoorBody": "",
 "DoorHandleGrab": "",
 "Function_ClimbMovement": "",
 "Function_DirectMovement": "",
@@ -130,11 +152,13 @@ _global_script_class_icons={
 "Function_WindMovement": "",
 "GroundPhysics": "",
 "GroundPhysicsSettings": "",
-"HingedDoor": "",
+"HingedDoorApi": "",
 "HingedDoorBody": "",
 "MovementProvider": "",
 "Object_climbable": "",
 "PlayerBody": "",
+"SlidingDoorApi": "",
+"SlidingDoorBody": "",
 "VelocityAverager": "",
 "VelocityAveragerLinear": "",
 "VirtualKeyboard2D": "",
@@ -159,6 +183,7 @@ singletons=[ "res://addons/godot-openxr/config/godot_openxr.gdnlib" ]
 3d_physics/layer_1="Environment"
 3d_physics/layer_2="Grabbed"
 3d_physics/layer_3="Doors"
+3d_physics/layer_4="Handles"
 3d_physics/layer_20="Player"
 
 [physics]

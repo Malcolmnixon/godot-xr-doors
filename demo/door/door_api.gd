@@ -1,13 +1,13 @@
-class_name HingedDoor
+class_name DoorApi
 extends Spatial
 
 
 ##
-## Hinged Door API script
+## Door API script
 ##
 ## @desc:
-##     This script exposes the public API for hinged doors. It contains all the
-##     configuration parameters and the public signals the door can emit.
+##     This script exposes the base public API for doors. All door APIs extend
+##     from this script and add additional door-specific properties.
 ##
 
 
@@ -23,23 +23,6 @@ signal door_opened(door)
 ## Signal emitted when a door re-latches
 signal door_closed(door)
 
-## Minimum angle the door can swing to (0 is closed)
-export(float, -180.0, 180.0, 1.0) var door_minimum_angle := -90.0
-
-## Maximum angle the door can swing to (0 is closed)
-export(float, -180.0, 180.0, 1.0) var door_maximum_angle := 0.0
-
-## Minium angle the door handle can swing to (0 is flat)
-export(float, -180.0, 180.0, 1.0) var handle_minimum_angle := 0.0
-
-## Maximum angle the door handle can swing to (0 is flat)
-export(float, -180.0, 180.0, 1.0) var handle_maximum_angle := 70.0
-
-## Unsigned door handle angle to open the door
-export(float, 0.0, 180.0, 1.0) var handle_open_angle := 40.0
-
-## Unsigned door angle to latch the door
-export(float, 0.0, 180.0, 1.0) var latch_angle := 3.0
 
 ## Door self-closing force
 export(float, 0.0, 1.0, 0.01) var close_force := 0.0
@@ -61,7 +44,7 @@ func _on_door_grabbed():
 	emit_signal("door_grabbed", self)
 
 
-func on_door_released():
+func _on_door_released():
 	emit_signal("door_released", self)
 
 

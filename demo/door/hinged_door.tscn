@@ -1,6 +1,6 @@
 [gd_scene load_steps=14 format=2]
 
-[ext_resource path="res://demo/door/hinged_door.gd" type="Script" id=1]
+[ext_resource path="res://demo/door/hinged_door_api.gd" type="Script" id=1]
 [ext_resource path="res://demo/door/door_handle_grab.gd" type="Script" id=2]
 [ext_resource path="res://demo/door/hinged_door_body.gd" type="Script" id=3]
 [ext_resource path="res://addons/wahooney.itch.io/white_grid.png" type="Texture" id=4]
@@ -67,7 +67,7 @@ mesh = SubResource( 4 )
 material/0 = null
 
 [node name="DoorHandleGrab" type="RigidBody" parent="HingedDoorBody/DoorHandleOrigin"]
-collision_layer = 4
+collision_layer = 8
 collision_mask = 0
 mode = 1
 gravity_scale = 0.0

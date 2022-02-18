@@ -49,20 +49,26 @@ export var horizontal_slew_rate := 1.0
 export var vertical_slew_rate := 2.0
 
 ## Left ARVR Controller
-export var left_controller := NodePath()
+export (NodePath) var left_controller = null
 
 ## Right ARVR Controller
-export var right_controller := NodePath()
+export (NodePath) var right_controller = null
 
 # Node references
-onready var _left_controller_node := ARVRHelpers.get_left_controller(self, left_controller)
-onready var _right_controller_node := ARVRHelpers.get_right_controller(self, right_controller)
+var _left_controller_node: ARVRController = null
+var _right_controller_node: ARVRController = null
 
 # Is the player gliding
 var is_gliding := false
 
 # Horizontal vector (multiply by this to get only the horizontal components
 const horizontal := Vector3(1.0, 0.0, 1.0)
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	# Get the controllers
+	_left_controller_node = get_node(left_controller) if left_controller else get_node("../LeftHandController")
+	_right_controller_node = get_node(right_controller) if right_controller else get_node("../RightHandController")
 
 func physics_movement(delta: float, player_body: PlayerBody):
 	# Skip if either controller is off
@@ -119,13 +125,13 @@ func _set_is_gliding(gliding: bool):
 # This method verifies the MovementProvider has a valid configuration.
 func _get_configuration_warning():
 	# Verify the left controller
-	var test_left_controller_node = ARVRHelpers.get_left_controller(self, left_controller)
-	if !test_left_controller_node:
+	var test_left_controller_node = get_node_or_null(left_controller) if left_controller else get_node_or_null("../LeftHandController")
+	if !test_left_controller_node or !test_left_controller_node is ARVRController:
 		return "Unable to find left ARVR Controller node"
 
 	# Verify the right controller
-	var test_right_controller_node = ARVRHelpers.get_right_controller(self, right_controller)
-	if !test_right_controller_node:
+	var test_right_controller_node = get_node_or_null(right_controller) if right_controller else get_node_or_null("../RightHandController")
+	if !test_right_controller_node or !test_right_controller_node is ARVRController:
 		return "Unable to find right ARVR Controller node"
 
 	# Check glide parameters

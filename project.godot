@@ -9,11 +9,6 @@
 config_version=4
 
 _global_script_classes=[ {
-"base": "Reference",
-"class": "ARVRHelpers",
-"language": "GDScript",
-"path": "res://addons/godot-xr-tools/misc/ARVR_Helpers.gd"
-}, {
 "base": "Spatial",
 "class": "DoorApi",
 "language": "GDScript",
@@ -114,11 +109,6 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/godot-xr-tools/misc/Velocity_Averager_Linear.gd"
 }, {
-"base": "CanvasLayer",
-"class": "VirtualKeyboard2D",
-"language": "GDScript",
-"path": "res://addons/godot-xr-tools/objects/keyboard/VirtualKeyboard_2D.gd"
-}, {
 "base": "Area",
 "class": "WindArea",
 "language": "GDScript",
@@ -140,7 +130,6 @@ _global_script_classes=[ {
 "path": "res://addons/godot-xr-tools/objects/Object_pickable.gd"
 } ]
 _global_script_class_icons={
-"ARVRHelpers": "",
 "DoorApi": "",
 "DoorBody": "",
 "DoorHandleGrab": "",
@@ -161,7 +150,6 @@ _global_script_class_icons={
 "SlidingDoorBody": "",
 "VelocityAverager": "",
 "VelocityAveragerLinear": "",
-"VirtualKeyboard2D": "",
 "WindArea": "",
 "XRToolsInteractableArea": "",
 "XRToolsInteractableBody": "",

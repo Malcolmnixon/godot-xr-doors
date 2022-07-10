@@ -64,15 +64,17 @@ func _ready():
 	_door_origin = transform.origin
 	
 	# Get the grab handle and connect the events
-	_handle_grab.connect("picked_up", self, "_on_handle_grab_picked_up")
-	_handle_grab.connect("handle_dropped", self, "_on_handle_grab_dropped")
+	if _handle_grab.connect("picked_up", self, "_on_handle_grab_picked_up"):
+		print("Unable to connect to the handle picked_up signal")
+	if _handle_grab.connect("dropped", self, "_on_handle_grab_dropped"):
+		print("Unable to connect to the handle dropped signal")
 
 
 # Set the door state
-func _set_door_state(var new_state) -> int:
+func _set_door_state(var new_state) -> void:
 	# Skip if no change
 	if new_state == _door_state:
-		return _door_state
+		return
 
 	# Update the door state
 	var previous_state = _door_state
@@ -98,9 +100,6 @@ func _set_door_state(var new_state) -> int:
 		# Door is open, set physics to MODE_RIGID for environmental effects
 		mode = RigidBody.MODE_RIGID
 		_apply_average_motion()
-
-	# Return the previous state
-	return previous_state
 
 
 # Called when the user grabs the door handle

@@ -17,9 +17,6 @@ extends XRToolsPickable
 ##      - Rotation for updating the handle model and opening the door
 ##
 
-## Signal emitted when the handle is dropped
-signal handle_dropped(pickable)
-
 ## Distance from the handle origin to auto-snap the grab
 export var snap_distance := 0.3
 
@@ -41,12 +38,9 @@ func _process(_delta):
 
 
 # Handle letting go of the door handle grab
-func let_go(_p_linear_velocity = Vector3(), _p_angular_velocity = Vector3()):
+func let_go(_p_linear_velocity: Vector3, _p_angular_velocity: Vector3) -> void:
 	# Call the base-class to perform the drop, but with no velocity
-	.let_go()
+	.let_go(Vector3.ZERO, Vector3.ZERO)
 
 	# Snap the handle back to the origin
 	transform = Transform.IDENTITY
-
-	# Emit the handle dropped signal
-	emit_signal("handle_dropped", self)
